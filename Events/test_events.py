@@ -11,7 +11,21 @@ class TestEventModel(unittest.TestCase):
     full_name = "Test User"
 
     def setUp(self):
+        self.create_user()
         self.access_token = self.login_and_get_token()
+
+    def create_user(self):
+        user_data = {
+            "email": self.email,
+            "password": self.password,
+            "full_name": self.full_name
+        }
+        response = client.post("/api/create_user", json=user_data)
+        if response.status_code != 200:
+            # User already exists
+            pass
+        else:
+            self.assertEqual(response.status_code, 200)
 
     def login_and_get_token(self):
         login_data = {
