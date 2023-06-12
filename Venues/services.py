@@ -15,9 +15,22 @@ async def create_venue(db: _orm.Session, venue: _schemas.VenueCreate, owner_id: 
 
 
 async def create_event_venue(db: _orm.Session, event, venue_id: int):
-    #     update the event with the venue_id
     event.venue_id = venue_id
     db.add(event)
     db.commit()
     db.refresh(event)
-    # return _schemas.Event.from_orm(event)
+
+
+async def get_venue_by_id(db: _orm.Session, venue_id: int):
+    venue = db.get(_models.Venue, venue_id)
+    return venue
+
+
+async def get_all_venues(db: _orm.Session, offset: int = 0, limit: int = 100):
+    venues = db.query(_models.Venue).all()
+    return venues
+
+
+async def get_user_venues(db: _orm.Session, owner_id: int, offset: int = 0, limit: int = 100):
+    venues = db.query(_models.Venue).filter(_models.Venue.owner_id == owner_id).offset(offset).limit(limit).all()
+    return venues

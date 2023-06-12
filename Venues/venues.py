@@ -36,3 +36,28 @@ async def create_venue(
 
     await _services.create_event_venue(db=db, event=event, venue_id=venue.id)
     return venue
+
+
+# get venue by id
+@app.get("/api/venues/{venue_id}", response_model=_schemas.Venue)
+async def get_venue_by_id(venue_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)):
+    venue = await _services.get_venue_by_id(db=db, venue_id=venue_id)
+    if not venue:
+        raise _fastapi.HTTPException(status_code=404, detail="Venue not found")
+    return _schemas.Venue.from_orm(venue)
+
+
+# get all venues
+@app.get("/api/venues", response_model=list[_schemas.Venue])
+async def get_all_venues(db: _orm.Session = _fastapi.Depends(_services.get_db), offset: int = 0, limit: int = 100):
+    venues = await _services.get_all_venues(db=db, offset=offset, limit=limit)
+    return [_schemas.Venue.from_orm(venue) for venue in venues]
+
+
+# get user venues
+@app.get("/api/user_venues", response_model=list[_schemas.Venue])
+async def get_user_venues(db: _orm.Session = _fastapi.Depends(_services.get_db),
+                          current_user: _user_schemas.User = _fastapi.Depends(_user_services.get_current_user),
+                          offset: int = 0, limit: int = 100):
+    venues = await _services.get_user_venues(db=db, owner_id=current_user.id, offset=offset, limit=limit)
+    return [_schemas.Venue.from_orm(venue) for venue in venues]
