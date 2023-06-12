@@ -19,10 +19,14 @@ class TestVenueModel(unittest.TestCase):
         "dimension": "Test dimension",
         "capacity": 100
     }
+    headers = {}
 
     def setUp(self):
         self.create_user()
         self.access_token = self.login_and_get_token()
+        self.headers = {
+            "Authorization": f"Bearer {self.access_token}"
+        }
 
     def create_Event(self):
         event_data = {
@@ -61,11 +65,14 @@ class TestVenueModel(unittest.TestCase):
         self.assertEqual(response.json()["token_type"], "bearer")
         return response.json()["access_token"]
 
+    def create_venue(self, headers):
+        return client.post("/api/create_venue", json=self.venue_data, headers=headers)
+
     def test_create_venue(self):
         headers = {
             "Authorization": f"Bearer {self.access_token}"
         }
-        response = client.post("/api/create_venue", json=self.venue_data, headers=headers)
+        response = self.create_venue(headers)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["name"], "Test Venue")
 
@@ -78,11 +85,19 @@ class TestVenueModel(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["name"], "Test Venue")
 
-    # def test_get_venue_by_id(self):
-    #     venue_id = self.create_venue_and_get_id()
-    #     headers = {
-    #         "Authorization": f"Bearer {self.access_token}"
-    #     }
-    #     response = client.get(f"/api/venue/{venue_id}", headers=headers)
-    #     self.assertEqual(response.status_code, 200)
-    #     # Add assertions to validate the response data
+    def test_get_venue_by_id(self):
+        venue = self.create_venue(self.headers)
+        venue_id = venue.json()["id"]
+        response = client.get(f"/api/venues/{venue_id}", headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(venue_id, response.json()["id"])
+
+    def test_get_all_venues(self):
+        response = client.get("/api/venues", headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        # Add assertions to validate the response data
+
+    def test_get_user_venues(self):
+        response = client.get("/api/user_venues", headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        # Add assertions to validate the response data
