@@ -1,7 +1,7 @@
 import sqlalchemy.orm as _orm
 from . import schemas as _schemas
 from . import models as _models
-from main import get_db
+from database import get_db
 from Users import services as _user_services
 from Events import services as _event_services
 

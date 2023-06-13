@@ -1,7 +1,7 @@
 import sqlalchemy.orm as _orm
 from . import schemas as _schemas
 from . import models as _models
-from main import get_db
+from database import get_db
 from Users import services as _user_services
 
 async def create_event(db: _orm.Session, event: _schemas.EventCreate, owner_id: int):

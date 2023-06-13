@@ -1,4 +1,3 @@
-from main import app
 from typing import List
 import fastapi as _fastapi
 import fastapi.security as _security
@@ -7,9 +6,12 @@ import sqlalchemy.orm as _orm
 
 from . import services as _services
 from . import schemas as _schemas
+from fastapi import APIRouter
+
+router = APIRouter()
 
 
-@app.post("/api/create_user", response_model=_schemas.AccessToken)
+@router.post("/api/create_user", response_model=_schemas.AccessToken)
 async def create_user(user: _schemas.UserCreate, db: _orm.Session = _fastapi.Depends(_services.get_db)):
     db_user = await _services.get_user_by_email(db, email=user.email)
     if db_user:
@@ -19,7 +21,7 @@ async def create_user(user: _schemas.UserCreate, db: _orm.Session = _fastapi.Dep
     return await _services.create_token(user=user)
 
 
-@app.post("/api/token", response_model=_schemas.AccessToken)
+@router.post("/api/token", response_model=_schemas.AccessToken)
 async def login(form_data: _security.OAuth2PasswordRequestForm = _fastapi.Depends(),
                 db: _orm.Session = _fastapi.Depends(_services.get_db)):
     """
@@ -40,12 +42,12 @@ async def login(form_data: _security.OAuth2PasswordRequestForm = _fastapi.Depend
     return await _services.create_token(user=user)
 
 
-@app.get("/api/users", response_model=List[_schemas.User])
+@router.get("/api/users", response_model=List[_schemas.User])
 async def read_users(skip: int = 0, limit: int = 100, db: _orm.Session = _fastapi.Depends(_services.get_db)):
     users = await _services.get_users(db=db, skip=skip, limit=limit)
     return users
 
 
-@app.get("/api/users/me", response_model=_schemas.User)
+@router.get("/api/users/me", response_model=_schemas.User)
 async def read_users_me(current_user: _schemas.User = _fastapi.Depends(_services.get_current_user)):
     return current_user

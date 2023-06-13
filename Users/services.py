@@ -7,7 +7,7 @@ import fastapi.security as _security
 
 from . import schemas as _schemas
 from . import models as _models
-from main import get_db
+from database import get_db
 
 _JWT_SECRET = "eventmanagementbackend"
 oauth2_scheme = _security.OAuth2PasswordBearer(tokenUrl="/api/token")

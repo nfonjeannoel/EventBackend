@@ -3,12 +3,15 @@ import fastapi as _fastapi
 import sqlalchemy.orm as _orm
 from . import services as _services
 from . import schemas as _schemas
-from main import app
 from Users import schemas as _user_schemas
 from .services import _user_services
 
+from fastapi import APIRouter
 
-@app.post("/api/create_event", response_model=_schemas.Event)
+router = APIRouter()
+
+
+@router.post("/api/create_event", response_model=_schemas.Event)
 async def create_event(event: _schemas.EventCreate, db: _orm.Session = _fastapi.Depends(_services.get_db),
                        current_user: _user_schemas.User = _fastapi.Depends(_user_services.get_current_user)
                        ):
@@ -16,7 +19,7 @@ async def create_event(event: _schemas.EventCreate, db: _orm.Session = _fastapi.
 
 
 # update event
-@app.put("/api/event/{event_id}", response_model=_schemas.Event)
+@router.put("/api/event/{event_id}", response_model=_schemas.Event)
 async def update_event(event_id: int, event: _schemas.EventUpdate,
                        db: _orm.Session = _fastapi.Depends(_services.get_db),
                        current_user: _user_schemas.User = _fastapi.Depends(_user_services.get_current_user)
@@ -31,13 +34,13 @@ async def update_event(event_id: int, event: _schemas.EventUpdate,
     return await _services.update_event(db=db, event=event, db_event=db_event)
 
 
-@app.get("/api/all_events", response_model=List[_schemas.Event])
+@router.get("/api/all_events", response_model=List[_schemas.Event])
 async def get_all_events(db: _orm.Session = _fastapi.Depends(_services.get_db)):
     return [_schemas.Event.from_orm(event) for event in await _services.get_all_events(db=db)]
 
 
 # get events by owner
-@app.get("/api/events/me", response_model=List[_schemas.Event])
+@router.get("/api/events/me", response_model=List[_schemas.Event])
 async def get_events_by_owner(db: _orm.Session = _fastapi.Depends(_services.get_db),
                               current_user: _user_schemas.User = _fastapi.Depends(_user_services.get_current_user)
                               ):
@@ -45,7 +48,7 @@ async def get_events_by_owner(db: _orm.Session = _fastapi.Depends(_services.get_
             await _services.get_events_by_owner(db=db, owner_id=current_user.id)]
 
 
-@app.get("/api/event/{event_id}", response_model=_schemas.Event)
+@router.get("/api/event/{event_id}", response_model=_schemas.Event)
 async def get_event_by_id(event_id: int, db: _orm.Session = _fastapi.Depends(_services.get_db)):
     event = await _services.get_event_by_id(db=db, event_id=event_id)
     if not event:
@@ -53,6 +56,6 @@ async def get_event_by_id(event_id: int, db: _orm.Session = _fastapi.Depends(_se
     return event
 
 
-@app.get("/eventByDate")
+@router.get("/eventByDate")
 async def get_event_by_date(date: str, db: _orm.Session = _fastapi.Depends(_services.get_db)):
     return await _services.get_event_by_date(db=db, date=date)
